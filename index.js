@@ -17,10 +17,33 @@ import { PDFDocument, rgb } from "pdf-lib";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-parse("");
+parseAllSheets([
+  "https://musescore.com/ritsh_score/listen-to-your-heart",
+  "https://musescore.com/user/39455/scores/57518",
+]);
+
+async function parseAllSheets(urls) {
+  if (Array.isArray(urls)) {
+    const promises = [];
+
+    for (const url of urls) {
+      promises.push(
+        parse(url).catch((e) => {
+          console.error(`Error during parsing ${url}: `, e);
+        }),
+      );
+    }
+
+    await Promise.all(promises);
+    return;
+  }
+
+  await parse(urls).catch((e) => {
+    console.error(`Error during parsing ${urls}: `, e);
+  });
+}
 
 async function parse(url) {
-  console.time("bench");
   const browser = await chromium.launch();
   const page = await browser.newPage();
   await page.goto(url, {
@@ -54,42 +77,42 @@ async function parse(url) {
     promises.push(downloadImage(formattedTitle, link));
   }
 
-  const filePaths = await Promise.all(promises);
-  const fileExtensions = [];
+  await Promise.all(promises);
+  // const fileExtensions = [];
 
-  for (const filePath of filePaths) {
-    const extension = filePath.split(".").at(-1);
-    fileExtensions.push(extension);
-  }
+  // for (const filePath of filePaths) {
+  //   const extension = filePath.split(".").at(-1);
+  //   fileExtensions.push(extension);
+  // }
 
   const promisedSvg2Img = promisify(svg2img);
   promises = [];
 
   const pngPaths = [];
 
-  if (fileExtensions.every((name) => name === "svg")) {
-    const svgPaths = await fs.readdir(path.join(__dirname, formattedTitle));
+  const svgPaths = await fs.readdir(path.join(__dirname, formattedTitle));
 
-    for (const svgPath of svgPaths) {
-      const svgFullPath = path.join(__dirname, formattedTitle, svgPath);
-      const pngFullPath = svgFullPath.replace(".svg", ".png");
+  for (const svgPath of svgPaths) {
+    const svgFullPath = path.join(__dirname, formattedTitle, svgPath);
 
-      pngPaths.push(pngFullPath);
-
-      promises.push(
-        promisedSvg2Img(svgFullPath)
-          .then((output) => {
-            return fs.writeFile(pngFullPath, output);
-          })
-          .then(() => {
-            return fs.unlink(svgFullPath);
-          }),
-      );
-      // const output = await promisedSvg2Img(path.join(__dirname, formattedTitle, svgPath));
-      // await fs.writeFile(path.join(
-      //   __dirname, formattedTitle, svgPath.replace('.svg', '.png')
-      // ), output);
+    if (svgFullPath.includes(".png")) {
+      pngPaths.push(svgFullPath);
+      continue;
     }
+
+    const pngFullPath = svgFullPath.replace(".svg", ".png");
+
+    pngPaths.push(pngFullPath);
+
+    promises.push(
+      promisedSvg2Img(svgFullPath)
+        .then((output) => {
+          return fs.writeFile(pngFullPath, output);
+        })
+        .then(() => {
+          return fs.unlink(svgFullPath);
+        }),
+    );
   }
 
   await Promise.all(promises);
@@ -115,8 +138,6 @@ async function parse(url) {
     pdfPaths,
     path.join(__dirname, formattedTitle, "output.pdf"),
   );
-
-  console.timeEnd("bench");
 
   // console.log(links);
   // console.log(title);
