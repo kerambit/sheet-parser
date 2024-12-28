@@ -1,0 +1,19 @@
+{
+  "name": "sheet_parser",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.48.2",
+    "@types/node": "^22.9.0"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "svg2img": "^1.0.0-beta.2"
+  }
+}
