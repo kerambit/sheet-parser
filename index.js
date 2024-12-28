@@ -17,10 +17,7 @@ import { PDFDocument, rgb } from "pdf-lib";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-parseAllSheets([
-  "https://musescore.com/ritsh_score/listen-to-your-heart",
-  "https://musescore.com/user/39455/scores/57518",
-]);
+parseAllSheets(["url1", "url2", "url3", "urln"]);
 
 async function parseAllSheets(urls) {
   if (Array.isArray(urls)) {
