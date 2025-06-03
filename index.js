@@ -7,13 +7,12 @@ import {
   createDir,
   downloadImage,
 } from "./utils.js";
-import path, { join } from "path";
+import path from "path";
 import { fileURLToPath } from "url";
 import svg2img from "svg2img";
 import { promisify } from "util";
 import { PDFDocument, rgb } from "pdf-lib";
 
-// const svg2img = pkg;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -75,12 +74,6 @@ async function parse(url) {
   }
 
   await Promise.all(promises);
-  // const fileExtensions = [];
-
-  // for (const filePath of filePaths) {
-  //   const extension = filePath.split(".").at(-1);
-  //   fileExtensions.push(extension);
-  // }
 
   const promisedSvg2Img = promisify(svg2img);
   promises = [];
@@ -135,25 +128,17 @@ async function parse(url) {
     pdfPaths,
     path.join(__dirname, formattedTitle, "output.pdf"),
   );
-
-  // console.log(links);
-  // console.log(title);
 }
 
 async function convertImageToPdf(imagePath, pdfPath) {
-  // Read the image file asynchronously.
   const image = await fs.readFile(imagePath);
 
-  // Create a new PDF document.
   const pdfDoc = await PDFDocument.create();
 
-  // Add a new page to the PDF document with a dimension of 400×400 points.
   const page = pdfDoc.addPage([600, 800]);
 
-  // Embed the image into the PDF document.
   const imageEmbed = await pdfDoc.embedPng(image);
 
-  // Scale the image to fit within the page dimensions while preserving aspect ratio.
   const { width, height } = imageEmbed.scaleToFit(
     page.getWidth(),
     page.getHeight(),
@@ -168,10 +153,8 @@ async function convertImageToPdf(imagePath, pdfPath) {
     color: rgb(0, 0, 0), // Set the image color to black.
   });
 
-  // Save the PDF document as bytes.
   const pdfBytes = await pdfDoc.save();
 
-  // Write the PDF bytes to a file asynchronously.
   await fs.writeFile(pdfPath, pdfBytes);
 }
 
